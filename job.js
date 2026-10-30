@@ -8,7 +8,8 @@
   const save = () => { try { localStorage.setItem(KEY, JSON.stringify(job)); } catch { /* storage unavailable */ } };
 
   const HIRING_BAR = 75;
-  const AVAILABLE_QUESTIONS = 2; // questions with a finished page
+  const LAB_TOTAL = Object.keys(window.LABS || {}).length || 16;
+  const AVAILABLE_QUESTIONS = 50;
 
   // ---------- Mock interview prompts ----------
   const PROMPTS = [
@@ -109,8 +110,8 @@
     const critDone = PROJECTS.reduce((a, p) => a + p.criteria.filter((_, i) => job.proj[`${p.id}-${i}`]).length, 0);
     const playDone = PLAY.filter((_, i) => job.play[i]).length;
     const parts = [
-      { name: 'Questions studied', got: Math.min(done, AVAILABLE_QUESTIONS) / AVAILABLE_QUESTIONS * 10, max: 10, detail: `${Math.min(done, AVAILABLE_QUESTIONS)}/${AVAILABLE_QUESTIONS}`, next: 'Study Question 1 or 2 and press Mark as Done.' },
-      { name: 'Labs passed', got: labs / 16 * 25, max: 25, detail: `${labs}/16`, next: 'Open a card on Question 1 or 2 and pass its lab.' },
+      { name: 'Questions studied', got: Math.min(done, AVAILABLE_QUESTIONS) / AVAILABLE_QUESTIONS * 10, max: 10, detail: `${Math.min(done, AVAILABLE_QUESTIONS)}/${AVAILABLE_QUESTIONS}`, next: 'Study the next question and press Mark as Done.' },
+      { name: 'Labs passed', got: labs / LAB_TOTAL * 25, max: 25, detail: `${labs}/${LAB_TOTAL}`, next: 'Open any question card and pass its lab.' },
       { name: 'Mock interviews', got: mockSum / (PROMPTS.length * 100) * 30, max: 30, detail: `${PROMPTS.filter((p) => job.mock[p.id]).length}/${PROMPTS.length} tried`, next: 'Do a strict mock interview below and aim for “Strong hire”.' },
       { name: 'Portfolio proof', got: critDone / crit * 25, max: 25, detail: `${PROJECTS.filter(projDone).length}/${PROJECTS.length} projects`, next: 'Ship the next portfolio project and tick its criteria.' },
       { name: 'Job-search playbook', got: playDone / PLAY.length * 10, max: 10, detail: `${playDone}/${PLAY.length}`, next: 'Work through the job-search playbook.' },

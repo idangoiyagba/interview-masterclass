@@ -657,7 +657,7 @@ dialog.lab::backdrop { background: rgba(30, 30, 50, .45); }
 }
 
 /* ============ Get Hired: $120k Track ============ */
-.in-job #doneBtn { display: none; }
+.in-job #doneBtn, .in-all #doneBtn { display: none; }
 .nav-job { background: #fff4c2; }
 .nav-job b { font-weight: 400; color: #c92a2a; }
 .span2 { grid-column: span 2; }
@@ -731,6 +731,37 @@ dialog.lab::backdrop { background: rgba(30, 30, 50, .45); }
   .mock-q { grid-template-columns: 1fr auto; }
   .mock-girl { display: none; }
 }
+
+/* ============ Generated question pages ============ */
+.gcard { gap: 8px; }
+.g-flow { display: flex; flex-wrap: wrap; justify-content: center; align-items: flex-start; gap: 4px 2px; }
+.g-node { width: 74px; font-size: 13.5px; }
+.g-node small { font-size: 12px; color: var(--ink); }
+.g-node .a-ic { width: 50px; height: 46px; }
+.g-node .a-ic svg { width: 34px; height: 34px; }
+.g-arrow { font-size: 20px; margin-top: 12px; }
+.g-dots { margin: 0; padding-left: 16px; font-size: 14.5px; display: grid; gap: 2px; }
+.g-code {
+  margin: 0; background: #1e1f2b; color: #d0f4de; border-radius: 10px 6px 12px 6px;
+  font-family: "JetBrains Mono", Consolas, monospace; font-size: 11.5px; line-height: 1.45;
+  padding: 8px 10px; white-space: pre-wrap; word-break: break-word; font-variant-ligatures: none;
+}
+.g-talk { height: 196px; }
+.g-bot { min-height: 0; padding-right: 70px; }
+.gcard .prompt, .gcard .response { margin-top: 10px; }
+.gcard .m-row { font-size: 13.5px; }
+
+/* All Questions index */
+.all { display: grid; gap: 14px; }
+.all-h { font-family: var(--head); font-size: 20px; margin: 0 0 6px; text-transform: uppercase; }
+.all-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 10px; }
+.qtile { display: flex; gap: 10px; align-items: center; text-align: left; background: #fff; padding: 8px 10px; transition: transform .12s; }
+.qtile:hover { transform: translateY(-2px); background: #f4f8ff; }
+.qtile.is-done { background: #ebfbee; }
+.qtile .num { width: 38px; height: 38px; font-size: 22px; }
+.qt-body { display: flex; flex-direction: column; line-height: 1.1; }
+.qt-body b { font-weight: 400; font-size: 15.5px; }
+.qt-body small { font-size: 13px; }
 
 /* Placeholder view */
 .soon { align-items: center; text-align: center; padding: 48px 20px; min-height: 420px; justify-content: center; }

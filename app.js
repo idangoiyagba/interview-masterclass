@@ -2,9 +2,9 @@
 const TOTAL = 50;
 
 const QUESTIONS = [
-  { n: 1, nav: 'RAG System', tab: 'RAG System', icon: 'i-brain', title: 'Design a RAG System for a Company’s Internal Documents',
+  { n: 1, cat: 'RAG & Retrieval', nav: 'RAG System', tab: 'RAG System', icon: 'i-brain', title: 'Design a RAG System for a Company’s Internal Documents',
     sub: 'Build a production-ready RAG system that answers employee questions using the company’s internal documents.' },
-  { n: 2, nav: 'LLM System Design', tab: 'LLM System<br>Design', icon: 'i-robot', title: 'Design an LLM-Powered Customer Support Assistant',
+  { n: 2, cat: 'LLM System Design', nav: 'LLM System Design', tab: 'LLM System<br>Design', icon: 'i-robot', title: 'Design an LLM-Powered Customer Support Assistant',
     sub: 'Design an LLM system that answers 10,000 customer chats a day and stays fast, safe and affordable.',
     bubble: 'Let’s think in<br>numbers!', note: 'This tests LLM architecture, model choice, latency, cost, safety and scale.' },
   { n: 3, nav: 'AI Agent', tab: 'AI Agents<br>Design', icon: 'i-brain', brain: '#da77f2', title: 'Design an AI Agent That Uses Tools Safely',
@@ -24,8 +24,16 @@ const QUESTIONS = [
   { n: 10, nav: 'Monitoring & Observability', tab: 'Monitoring<br>&amp; Observability', icon: 'i-siren', title: 'Monitor and Debug an LLM App',
     sub: 'Trace requests, watch quality and cost, and catch regressions early.' },
 ];
+// Build generated pages (Q3–Q50) before anything reads them
+window.buildQuestions?.();
+const QMETA = window.QMETA || {};
+
 // Questions with a finished page: number -> section id
 const VIEWS = { 1: 'q1View', 2: 'q2View' };
+Object.keys(QMETA).forEach((n) => { VIEWS[n] = `q${n}View`; });
+
+// Header/tab data for any question: generated data wins, then the built-in list
+const meta = (n) => QMETA[n] || QUESTIONS.find((x) => x.n === n);
 const DEFAULT_BUBBLE = 'Let’s design this<br>step by step!';
 const DEFAULT_NOTE = 'This tests system design, LLMs, RAG, data pipelines, security, and production thinking.';
 
@@ -59,9 +67,12 @@ function renderNav() {
   ];
   $('#sideNav').innerHTML = items.join('');
 
-  $('#tabs').innerHTML = QUESTIONS.slice(1).map((q, i) =>
-    `<button class="tab" data-q="${q.n}"><span class="num ${NUM_COLORS[i + 1]}">${q.n}</span><span>${q.tab}</span></button>`
-  ).join('') + `<button class="tab tab-next" data-nav="next" aria-label="Next question"><svg><use href="#i-chevron-r"/></svg></button>`;
+  // Footer strip: the next 9 questions after the current one
+  const nextNine = Array.from({ length: 9 }, (_, k) => ((current - 1 + k + 1) % TOTAL) + 1);
+  $('#tabs').innerHTML = nextNine.map((n) => {
+    const m = meta(n);
+    return `<button class="tab" data-q="${n}"><span class="num ${NUM_COLORS[(n - 1) % 10]}">${n}</span><span>${m ? (m.tab || m.nav) : `Question ${n}`}</span></button>`;
+  }).join('') + `<button class="tab tab-next" data-nav="next" aria-label="Next question"><svg><use href="#i-chevron-r"/></svg></button>`;
 
   document.querySelectorAll('#tabs .tab[data-q]').forEach((el) => el.classList.toggle('active', view === 'question' && Number(el.dataset.q) === current));
   document.querySelectorAll('#sideNav .nav-item').forEach((el) => {
@@ -72,7 +83,7 @@ function renderNav() {
 
 // ---------- Render header + body for current question ----------
 function render() {
-  const q = QUESTIONS.find((x) => x.n === current);
+  const q = meta(current);
   $('#qPill').textContent = `Question ${current} of ${TOTAL}`;
   $('#qTitle').textContent = q ? q.title : `Interview Question ${current}`;
   $('#qSub').textContent = q ? q.sub : 'A real senior AI engineering interview question.';
@@ -80,6 +91,7 @@ function render() {
   $('#qNote').textContent = (q && q.note) || DEFAULT_NOTE;
   document.title = current === 1 ? 'Senior AI Engineer Masterclass' : `Q${current} · Senior AI Engineer Masterclass`;
   document.body.classList.toggle('in-job', view === 'job');
+  document.body.classList.toggle('in-all', view === 'all');
   $('#jobView').hidden = view !== 'job';
   if (view === 'job') {
     $('#qPill').textContent = 'Get Hired · $120k Track';
@@ -98,7 +110,16 @@ function render() {
 
   const viewId = view === 'question' ? VIEWS[current] : null;
   Object.values(VIEWS).forEach((id) => { $('#' + id).hidden = id !== viewId; });
-  const ready = Boolean(viewId);
+  $('#allView').hidden = view !== 'all';
+  if (view === 'all') {
+    $('#qPill').textContent = `All ${TOTAL} Questions`;
+    $('#qTitle').textContent = 'Every question, one place';
+    $('#qSub').textContent = 'Pick any question. Each one has 8 steps, and every step opens a hands-on lab.';
+    $('#qBubble').innerHTML = 'Pick one and<br>let’s go!';
+    $('#qNote').textContent = 'Every question has 8 steps and 8 hands-on labs. Work through them in any order.';
+    renderAll();
+  }
+  const ready = Boolean(viewId) || view === 'all';
   $('#soonView').hidden = ready;
   if (!ready) {
     $('#soonTitle').textContent = view === 'all' ? 'All 50 questions' : `Question ${current} is coming soon`;
@@ -121,6 +142,30 @@ function updateProgress() {
   const fill = $('#progFill');
   fill.style.width = `${pct}%`;
   fill.classList.toggle('zero', done.size === 0);
+}
+
+// ---------- All Questions index ----------
+function renderAll() {
+  let passed = {};
+  try { passed = JSON.parse(localStorage.getItem('masterclass-labs-v1') || '{}'); } catch { /* storage unavailable */ }
+  const groups = {};
+  for (let n = 1; n <= TOTAL; n++) {
+    const m = meta(n);
+    const cat = (m && m.cat) || 'More';
+    (groups[cat] ||= []).push(n);
+  }
+  $('#allView').innerHTML = Object.entries(groups).map(([cat, ns]) => `
+    <section class="all-group">
+      <h3 class="all-h">${cat}</h3>
+      <div class="all-grid">${ns.map((n) => {
+        const m = meta(n);
+        const labs = Array.from({ length: 8 }, (_, i) => passed[`${n}-${i + 1}`]).filter(Boolean).length;
+        return `<button class="qtile sketch${done.has(n) ? ' is-done' : ''}" data-q="${n}">
+          <span class="num ${NUM_COLORS[(n - 1) % 10]}">${n}</span>
+          <span class="qt-body"><b>${m ? m.title : `Question ${n}`}</b><small>labs ${labs}/8${done.has(n) ? ' · ✓ done' : ''}</small></span>
+        </button>`;
+      }).join('')}</div>
+    </section>`).join('');
 }
 
 function go(n) {

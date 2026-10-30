@@ -12,7 +12,7 @@
 
   // ---------- Tag cards and add a "LAB" sticker ----------
   const cards = [];
-  ['1', '2'].forEach((q) => {
+  [...new Set(Object.keys(LABS).map((k) => Number(k.split('-')[0])))].sort((a, b) => a - b).forEach((q) => {
     document.querySelectorAll(`#q${q}View .card`).forEach((card, i) => {
       const key = `${q}-${i + 1}`;
       if (!LABS[key]) return;
